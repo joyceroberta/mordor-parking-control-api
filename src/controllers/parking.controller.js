@@ -1,6 +1,6 @@
-import { ParkingService } from "../services/parking.service.js";
+const { ParkingService } = require("../services/parking.service.js");
 
-export class ParkingController {
+class ParkingController {
   constructor() {
     this.parkingService = new ParkingService();
   }
@@ -9,9 +9,9 @@ export class ParkingController {
     try {
       const { plate } = req.body;
 
-      const parking = await this.parkingService.register(plate);
+      const result = await this.parkingService.register(plate);
 
-      res.status(201).json({ reservation: parking._id });
+      res.status(201).json({ reservation: result._id });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
@@ -21,20 +21,35 @@ export class ParkingController {
     try {
       const { plate } = req.params;
 
-      const history = await this.parkingService.getHistory(plate);
+      const result = await this.parkingService.getHistory(plate);
 
-      res.status(200).json(history);
+      res.status(200).json(result);
     } catch (error) {
       res.status(404).json({ error: error.message });
     }
   }
 
-  // async registerPayment(req, res) {
-  //   const { id } = req.params;
-  //   try {
-  //     const payment = await this.parkingService.payment(id);
-  //   } catch (error) {
-  //     res.status(400).json({ error: error.message });
-  //   }
-  // }
+  async registerPayment(req, res) {
+    const { id } = req.params;
+    try {
+      await this.parkingService.payment(id);
+      res.status(200).json({ message: "Payment made successfully." });
+    } catch (error) {
+      res.status(404).json({ error: error.message });
+    }
+  }
+
+  async registerExit(req, res) {
+    const { id } = req.params;
+    try {
+      await this.parkingService.exit(id);
+      res.status(200).json({
+        message: "Payment made, output released.",
+      });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  }
 }
+
+module.exports = { ParkingController };

@@ -1,5 +1,5 @@
-import express from "express";
-import { ParkingController } from "../controllers/parking.controller.js";
+const express = require("express");
+const { ParkingController } = require("../controllers/parking.controller.js");
 
 const router = express.Router();
 const parkingController = new ParkingController();
@@ -9,7 +9,10 @@ router.get(
   "/:plate",
   parkingController.getHistoryForPlate.bind(parkingController)
 );
-// router.put("/:id/pay", controller.registerPayment);
-// router.put("/:id/out", controller.out);
+router.put(
+  "/:id/pay",
+  parkingController.registerPayment.bind(parkingController)
+);
+router.put("/:id/out", parkingController.registerExit.bind(parkingController));
 
-export default router;
+module.exports = router;

@@ -1,6 +1,6 @@
-import Parking from "../models/parking.model.js";
+const Parking = require("../models/parking.model.js");
 
-export class ParkingService {
+class ParkingService {
   async register(plate) {
     if (!plate) {
       throw new Error("You must enter the license plate number.");
@@ -33,10 +33,12 @@ export class ParkingService {
   }
 
   async getHistory(plate) {
-    const history = await Parking.find({ plate });
+    const history = await Parking.find({
+      plate: { $regex: `^${plate}$`, $options: "i" },
+    });
 
     if (history.length === 0) {
-      throw new Error("Register not found");
+      throw new Error("Record not found for the provided board.");
     }
 
     return history.map((entry) => {
@@ -56,7 +58,44 @@ export class ParkingService {
     });
   }
 
-  // async payment(id){
+  async payment(id) {
+    const inTheParking = await Parking.findById(id);
 
-  // }
+    if (!inTheParking) {
+      throw new Error("Record not found for the provided board.");
+    }
+
+    if (inTheParking.paid) {
+      throw new Error("Payment already made");
+    }
+
+    inTheParking.paid = true;
+    await inTheParking.save();
+
+    return inTheParking;
+  }
+
+  async exit(id) {
+    const inTheParking = await Parking.findById(id);
+
+    if (!inTheParking) {
+      throw new Error("Record not found for the provided board.");
+    }
+
+    if (!inTheParking.paid) {
+      throw new Error("Payment not made, exit not allowed.");
+    }
+
+    if (inTheParking.left) {
+      throw new Error("Vehicle already left the parking.");
+    }
+
+    inTheParking.left = true;
+    inTheParking.exitTime = new Date();
+    await inTheParking.save();
+
+    return inTheParking;
+  }
 }
+
+module.exports = { ParkingService };
