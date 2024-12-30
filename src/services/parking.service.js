@@ -14,28 +14,53 @@ class ParkingService {
       );
     }
 
-    const existingParking = await Parking.findOne({ plate });
+    const existingParking = await Parking.findOne({ plate, left: false });
+
     if (existingParking) {
-      throw new Error(
-        "This sign is already registered in the parking lot, check it."
-      );
+      if (existingParking.paid && existingParking.left) {
+        await Parking.updateOne(
+          { _id: existingParking._id },
+          { $set: { left: true, paid: true } }
+        );
+
+        const parking = new Parking({
+          plate: plate.toUpperCase(),
+          entryTime: new Date(),
+          paid: false,
+          left: false,
+        });
+
+        await parking.save();
+        return parking;
+      } else {
+        throw new Error(
+          "This sign is already registered in the parking lot, check it."
+        );
+      }
+    } else {
+      const parking = new Parking({
+        plate: plate.toUpperCase(),
+        entryTime: new Date(),
+        paid: false,
+        left: false,
+      });
+
+      await parking.save();
+      return parking;
     }
-
-    const parking = new Parking({
-      plate: plate.toUpperCase(),
-      entryTime: new Date(),
-      paid: false,
-      left: false,
-    });
-
-    await parking.save();
-    return parking;
   }
 
   async getHistory(plate) {
     const history = await Parking.find({
       plate: { $regex: `^${plate}$`, $options: "i" },
     });
+
+    function formatDate(date) {
+      if (!date) return "Still in parking";
+      return new Date(date).toLocaleString("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+      });
+    }
 
     if (history.length === 0) {
       throw new Error("Record not found for the provided board.");
@@ -52,6 +77,8 @@ class ParkingService {
       return {
         id: entry._id,
         time: time,
+        entryDate: formatDate(entryTime),
+        exitDate: formatDate(exitTime),
         paid: entry.paid,
         left: entry.left,
       };

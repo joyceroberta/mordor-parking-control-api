@@ -4,7 +4,6 @@ const parkingSchema = new mongoose.Schema({
   plate: {
     type: String,
     required: true,
-    unique: true,
   },
   entryTime: {
     type: Date,
