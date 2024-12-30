@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mongo:
     image: mongo:6.0
@@ -21,7 +19,5 @@ services:
       - MONGO_URI=mongodb://mongo:27017/mordor_parking_control
     volumes:
       - .:/app
-    command: npx nodemon index.js
-
 volumes:
   mongo-data:
