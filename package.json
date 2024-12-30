@@ -7,7 +7,7 @@
     "test": "tests"
   },
   "scripts": {
-    "start": "nodemon index.js",
+    "start": "node index.js",
     "test": "cross-env NODE_ENV=test jest --detectOpenHandles"
   },
   "keywords": [],
